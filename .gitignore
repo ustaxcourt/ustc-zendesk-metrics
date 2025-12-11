@@ -1,1 +1,14 @@
+.idea
+__pycache__
+venv
+.venv
+node_modules
+.serverless
+staging.env
+prod.env
+development.env
+
+dist/**
+terraform/lambda-deployment.zip
+
 .venv
