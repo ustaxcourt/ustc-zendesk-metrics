@@ -12,7 +12,7 @@ secret_cache = {}
 ENV = os.getenv('ENV')
 
 def get_secret():
-  if ENV == 'development':
+  if ENV == 'local':
     return {
       'ADMIN_USER': 'some-admin@example.com',
       'ADMIN_PASS': 'Passw0rd#',
@@ -25,6 +25,8 @@ def get_secret():
       'ZENDESK_SIGNING_SECRET': 'dGhpc19zZWNyZXRfaXNfZm9yX3Rlc3Rpbmdfb25seQ==' # this was real, but it has been rotated
     }
 
+  print(f'get_secret init {ENV}')
+  
   secret_name = "ZendeskDawson"
   region_name = "us-east-1"
   

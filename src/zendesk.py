@@ -1,11 +1,7 @@
 # Python 3.X
 import requests
 import json
-import hmac
-import hashlib
-import os
 import time
-import base64
 from . import get_secrets
 
 config = {
@@ -24,7 +20,9 @@ config = {
 }
 
 def get_env(): 
+  print('get_env init')
   secrets = get_secrets.get_secret()
+  print('get_env success')
   return {
     'user': secrets['ADMIN_USER'] + '/token',
     'token': secrets['API_TOKEN'],
