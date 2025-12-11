@@ -50,19 +50,20 @@ def update_ticket_in_database(ticket):
 
 def update_metrics_database_at_cursor(window_start, cursor):
   data = zendesk.get_tickets_export(window_start, cursor)
+  env_vars = zendesk.get_env()
 
   for ticket in data['tickets']:
     if ticket['group_id'] is None:
       print('ticket is not a dawson ticket: None; ' + str(ticket['id']))
       continue
-    elif int(ticket['group_id']) != int(zendesk.config['zendesk_group_id']):
+    elif int(ticket['group_id']) != int(env_vars['zendesk_group_id']):
       print('ticket is not a dawson ticket: ' + str(ticket['group_id']) + '; ' + str(ticket['id']))
       continue
     update_ticket_in_database(ticket)
 
   if data['end_of_stream'] == False:
     print('continuing at ', data['after_cursor'])
-    params = { window_start: window_start, cursor: data['after_cursor'] }
+    params = { 'window_start': window_start, 'cursor': data['after_cursor'] }
     return insert_item_into_queue('update_database', params)
   
   print('next cursor (saving for next time): ', data['after_cursor'])
