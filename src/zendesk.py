@@ -28,8 +28,6 @@ def get_env():
   return {
     'user': secrets['ADMIN_USER'] + '/token',
     'token': secrets['API_TOKEN'],
-    'admissions': secrets['ADMISSIONS_EMAILS'].split(','),
-    'signing_secret': secrets['ZENDESK_SIGNING_SECRET'],
     'zendesk_group_id': secrets['ZENDESK_GROUP_ID']
   }
 
@@ -66,18 +64,6 @@ def get_tickets_by_tag(tag_name):
   url = config['api_url'] + f'/api/v2/search.json?query=tags:{tag_name} group:' + env_vars['zendesk_group_id']
   response = requests.get(url, auth=(env_vars['user'], env_vars['token']))
   return response.json()
-
-def respond_and_keep_open(ticket_id, comment):
-  '''
-  respond to the ticket with the message, and keep it open
-  '''
-  payload = { 
-    "ticket": {
-      "status": "open",
-      "comment": comment,
-    }
-  }
-  update_ticket(ticket_id, payload)
 
 def respond_and_mark_as_solved(ticket_id, comment):
   '''
@@ -135,17 +121,6 @@ def get_all_tags():
   resp = requests.get(url, auth=(env_vars['user'], env_vars['token']))
   return resp.json()
 
-def is_ticket_from_admissions(ticket):
-  '''
-  determine whether or not this ticket originated from admissions
-  '''
-  if ticket['via']['channel'] != 'email':
-    return False
-
-  env_vars = get_env()
-  ticket_email = ticket['via']['source']['from']['address'].lower()
-  return ticket_email in env_vars['admissions']
-
 def get_all_tickets(url=None, query=None):
   env_vars = get_env()
   if url == None:
@@ -200,19 +175,6 @@ def get_source_email(ticket):
   if ticket['via']['channel'] == 'email':
     return ticket['via']['source']['from']['address']
   return None
-
-def verify_signature(body, signature, timestamp):
-  env_vars = get_env()  
-  calculated_signature = timestamp + body
-
-  hash = hmac.new(
-    env_vars['signing_secret'].encode('ascii'),
-    calculated_signature.encode('ascii'),
-    hashlib.sha256
-  )
-
-  generated_signature = base64.b64encode(hash.digest()).decode()
-  return generated_signature == signature
 
 def create_ticket(subject, body):
   env_vars = get_env()
