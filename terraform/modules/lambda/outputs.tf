@@ -59,7 +59,7 @@ output "get_report_invoke_arn" {
   value       = aws_lambda_function.functions["getReport"].invoke_arn
 }
 
-output "get_report_last_modified" {
-  description = "Invoke ARN of the getReport Lambda function"
-  value       = aws_lambda_function.functions["getReport"].last_modified
+output "update_metrics_database_last_modified" {
+  description = "Invoke ARN of the updateMetricsDatabase Lambda function"
+  value       = aws_lambda_function.functions["updateMetricsDatabase"].last_modified
 }
