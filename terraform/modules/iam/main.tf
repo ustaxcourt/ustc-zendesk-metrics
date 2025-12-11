@@ -273,12 +273,58 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "s3:ListBucketVersions",
           "s3:PutBucketTagging",
           "s3:PutLifecycleConfiguration",
-          "s3:GetBucketAcl"
+          "s3:GetBucketAcl",
+          "s3:GetBucketCORS",
+          "s3:GetBucketWebsite",
+          "s3:GetBucketVersioning",
+          "s3:GetAccelerateConfiguration",
+          "s3:GetBucketRequestPayment",
+          "s3:GetBucketLogging",
+          "s3:GetReplicationConfiguration",
+          "s3:GetEncryptionConfiguration",
+          "s3:GetBucketObjectLockConfiguration",
         ],
         Resource = [
           "arn:aws:s3:::${local.project_name}-${var.environment}-athena-database",
           "arn:aws:s3:::${local.project_name}-${var.environment}-athena-results",
           "arn:aws:s3:::${local.project_name}-${var.environment}-ticket-data",
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ],
+        Resource = "arn:aws:s3:::${local.project_name}-${var.environment}-athena-database/*"
+      },
+      {
+          Effect = "Allow",
+          Action = [
+            "glue:CreateDatabase",
+            "glue:CreateTable",
+            "glue:UpdateTable",
+            "glue:DeleteTable",
+            "glue:GetDatabase",
+          ],
+          Resource = [
+            "arn:aws:glue:${local.aws_region}:${data.aws_caller_identity.current.account_id}:catalog",
+            "arn:aws:glue:${local.aws_region}:${data.aws_caller_identity.current.account_id}:database/metrics_database",
+            "arn:aws:glue:${local.aws_region}:${data.aws_caller_identity.current.account_id}:table/metrics_database/*"
+          ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "athena:StartQueryExecution",
+          "athena:GetQueryExecution",
+          "athena:GetQueryResults",
+          "athena:GetDatabase"
+        ],
+        Resource = [
+          "arn:aws:athena:${local.aws_region}:${data.aws_caller_identity.current.account_id}:*",
         ]
       }
     ]
@@ -321,7 +367,12 @@ resource "aws_iam_role_policy" "lambda_sqs_read_and_write" {
 data "aws_iam_policy_document" "lambda_s3_read_and_write" {
   statement {
     effect = "Allow"
-    actions = ["s3:GetObject","s3:PutObject","s3:DeleteObject"]
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket"
+    ]
     resources = [
       "arn:aws:s3:::${var.project_name}-${var.environment}-athena-database",
       "arn:aws:s3:::${var.project_name}-${var.environment}-athena-results"
