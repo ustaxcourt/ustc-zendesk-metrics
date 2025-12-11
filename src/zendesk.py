@@ -6,12 +6,10 @@ import hashlib
 import os
 import time
 import base64
-
-ZENDESK_GROUP_ID = os.getenv('ZENDESK_GROUP_ID')
+from . import get_secrets
 
 config = {
   'api_url': 'https://ustaxcourt.zendesk.com',
-  'zendesk_group_id': ZENDESK_GROUP_ID,
   'fields': {
     'bar_number': 360041870952,
     'docket_number': 360041668151,
@@ -32,6 +30,7 @@ def get_env():
     'token': secrets['API_TOKEN'],
     'admissions': secrets['ADMISSIONS_EMAILS'].split(','),
     'signing_secret': secrets['ZENDESK_SIGNING_SECRET'],
+    'zendesk_group_id': secrets['ZENDESK_GROUP_ID']
   }
 
 def set_custom_field_value(ticket, field_name, field_value):
@@ -64,7 +63,7 @@ def get_tickets_by_tag(tag_name):
   get all of the tickets in ZenDesk with the given `tag_name`
   '''
   env_vars = get_env()
-  url = config['api_url'] + f'/api/v2/search.json?query=tags:{tag_name} group:' + config['zendesk_group_id']
+  url = config['api_url'] + f'/api/v2/search.json?query=tags:{tag_name} group:' + env_vars['zendesk_group_id']
   response = requests.get(url, auth=(env_vars['user'], env_vars['token']))
   return response.json()
 
@@ -155,7 +154,7 @@ def get_all_tickets(url=None, query=None):
     if query == None:
       query = 'type:ticket status<solved'
 
-    url = url + requests.utils.quote(query + ' group:' + str(config['zendesk_group_id']))
+    url = url + requests.utils.quote(query + ' group:' + str(env_vars['zendesk_group_id']))
 
   res = requests.get(url, auth=(env_vars['user'], env_vars['token']))
   data = res.json()
@@ -216,6 +215,7 @@ def verify_signature(body, signature, timestamp):
   return generated_signature == signature
 
 def create_ticket(subject, body):
+  env_vars = get_env()
   headers = {'Content-Type': 'application/json'}
   url = config['api_url'] + f'/api/v2/tickets/'
   payload = json.dumps({
@@ -224,7 +224,7 @@ def create_ticket(subject, body):
         'body': body,
       },
       'subject': subject,
-      'group_id': ZENDESK_GROUP_ID,
+      'group_id': env_vars['zendesk_group_id'],
       'via': {
         'channel': 'email',
         'source': {

@@ -32,8 +32,8 @@ module "iam" {
   lambda_exec_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.project_name}-lambda-exec"
   deploy_role_name         = "${local.project_name}-cicd-deployer-role"
   artifacts_bucket_name    = "${local.project_name}-${var.environment}-build-artifacts"
-  job_queue_arn            = "arn:aws:sqs:${local.aws_region}:${data.aws_caller_identity.current.account_id}:${local.project_name}-${var.environment}-job-queue"
-  dlq_queue_arn            = "arn:aws:sqs:${local.aws_region}:${data.aws_caller_identity.current.account_id}:${local.project_name}-${var.environment}-job-queue-dlq"
+  job_queue_arn            = "arn:aws:sqs:${local.aws_region}:${data.aws_caller_identity.current.account_id}:job-queue"
+  dlq_queue_arn            = "arn:aws:sqs:${local.aws_region}:${data.aws_caller_identity.current.account_id}:job-queue-dlq"
   environment              = var.environment
 }
 

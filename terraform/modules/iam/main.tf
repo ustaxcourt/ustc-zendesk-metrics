@@ -241,7 +241,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "events:ListTargetsByRule",
           "events:RemoveTargets"
         ],
-        Resource = "arn:aws:events:${local.aws_region}:${data.aws_caller_identity.current.account_id}:rule/getReportCronRule"
+        Resource = "arn:aws:events:${local.aws_region}:${data.aws_caller_identity.current.account_id}:rule/updateMetricsDatabaseCronRule"
       },
       {
         Effect = "Allow",
@@ -257,6 +257,28 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = [
           var.job_queue_arn,
           var.dlq_queue_arn
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "s3:CreateBucket",
+          "s3:DeleteBucket",
+          "s3:GetBucketLocation",
+          "s3:GetBucketPolicy",
+          "s3:GetBucketTagging",
+          "s3:GetLifecycleConfiguration",
+          "s3:ListBucket",
+          "s3:ListBucketMultipartUploads",
+          "s3:ListBucketVersions",
+          "s3:PutBucketTagging",
+          "s3:PutLifecycleConfiguration",
+          "s3:GetBucketAcl"
+        ],
+        Resource = [
+          "arn:aws:s3:::${local.project_name}-${var.environment}-athena-database",
+          "arn:aws:s3:::${local.project_name}-${var.environment}-athena-results",
+          "arn:aws:s3:::${local.project_name}-${var.environment}-ticket-data",
         ]
       }
     ]
