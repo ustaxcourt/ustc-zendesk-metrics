@@ -72,6 +72,7 @@ def update_metrics_database_at_cursor(window_start, cursor):
   build_cache_populate_queue()
 
 def update_metrics_database(event, context):
+  print('update_metrics_database from lambda')
   cursor = get_metrics_cursor()
   window_start = datetime.strptime('01/01/2021', '%m/%d/%Y')
   window_start = int(time.mktime(window_start.timetuple()))
