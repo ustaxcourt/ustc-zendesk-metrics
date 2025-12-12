@@ -20,3 +20,6 @@ def get_s3_client():
 
 def get_athena_client():
   return boto3.client('athena', region_name="us-east-1")
+
+def get_sqs_client():
+  return boto3.client('sqs', region_name="us-east-1")
