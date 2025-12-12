@@ -253,6 +253,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "sqs:ListQueues",
           "sqs:ListQueueTags",
           "sqs:TagQueue",
+          "sqs:setqueueattributes"
         ],
         Resource = [
           var.job_queue_arn,
