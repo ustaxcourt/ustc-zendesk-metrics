@@ -351,7 +351,12 @@ data "aws_iam_policy_document" "lambda_sqs_read_and_write" {
   statement {
     sid       = "SQSReadWrite"
     effect    = "Allow"
-    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
+    actions   = [
+      "sqs:DeleteMessage", 
+      "sqs:GetQueueAttributes", 
+      "sqs:ReceiveMessage", 
+      "sqs:SendMessage"
+    ]
     resources = [
       var.job_queue_arn
     ]
