@@ -12,3 +12,7 @@ dist/**
 terraform/lambda-deployment.zip
 
 .venv
+
+# Agent context files may leak sensitive info
+CLAUDE.md
+.claude/

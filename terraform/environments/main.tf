@@ -16,6 +16,7 @@ module "lambda" {
   source                    = "../modules/lambda"
   function_name_prefix      = local.project_name
   lambda_execution_role_arn = data.terraform_remote_state.foundation.outputs.lambda_role_arn
+  runtime                   = "python3.13"
   
   environment_variables     = {
     ENV                   = var.environment
@@ -27,14 +28,20 @@ module "lambda" {
 
   artifact_bucket = local.artifacts_bucket_name
   artifact_s3_keys = {
-    getReport    = var.getReport_s3_key
+    getReport             = var.getReport_s3_key
     updateMetricsDatabase = var.updateMetricsDatabase_s3_key
-    processSqsMessage    = var.processSqsMessage_s3_key
+    processSqsMessage     = var.processSqsMessage_s3_key
   }
   source_code_hashes = {
-    getReport    = var.getReport_source_code_hash
+    getReport             = var.getReport_source_code_hash
     updateMetricsDatabase = var.updateMetricsDatabase_source_code_hash
-    processSqsMessage    = var.processSqsMessage_source_code_hash
+    processSqsMessage     = var.processSqsMessage_source_code_hash
+  }
+
+  lambda_timeouts = {
+    getReport             = 30
+    updateMetricsDatabase = 600
+    processSqsMessage     = 600
   }
 
   tags = {
@@ -81,6 +88,7 @@ resource "terraform_data" "update_metrics_database_cron_lambda_last_modified" {
 
 module "sqs" {
   source = "../modules/sqs"
+  lambda_arn = module.lambda.process_sqs_message_function_arn
 }
 
 module "s3" {

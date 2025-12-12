@@ -12,7 +12,7 @@ variable "lambda_execution_role_arn" {
 variable "runtime" {
   description = "Lambda runtime"
   type        = string
-  default     = "python3.9"
+  default     = "python3.14"
 }
 
 variable "environment_variables" {
@@ -46,4 +46,9 @@ variable "artifact_s3_keys" {
 variable "source_code_hashes" {
   description = "Map of function names to base64-encoded SHA256 hashes"
   type        = map(string)
+}
+
+variable "lambda_timeouts" {
+  description = "Map of function names to timeouts in seconds"
+  type        = map(number)
 }

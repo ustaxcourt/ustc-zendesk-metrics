@@ -224,7 +224,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "iam:UntagPolicy"
         ],
         Resource = [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/build-artifacts-access-policy",
+          var.build_artifacts_access_policy_arn,
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${local.project_name}-*"
         ]
       },
@@ -253,6 +253,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "sqs:ListQueues",
           "sqs:ListQueueTags",
           "sqs:TagQueue",
+          "sqs:setqueueattributes"
         ],
         Resource = [
           var.job_queue_arn,
@@ -326,6 +327,24 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = [
           "arn:aws:athena:${local.aws_region}:${data.aws_caller_identity.current.account_id}:*",
         ]
+      }, 
+      {
+        Effect = "Allow",
+        Action = [
+          "lambda:CreateEventSourceMapping",
+          "lambda:DeleteEventSourceMapping",
+          "lambda:ListEventSourceMappings",
+          "lambda:UpdateEventSourceMapping",
+          "lambda:ListTags"
+        ],
+        Resource = [
+          "arn:aws:lambda:${local.aws_region}:${data.aws_caller_identity.current.account_id}:event-source-mapping:*",
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = "lambda:GetEventSourceMapping",
+        Resource = "*"
       }
     ]
   })
@@ -351,7 +370,12 @@ data "aws_iam_policy_document" "lambda_sqs_read_and_write" {
   statement {
     sid       = "SQSReadWrite"
     effect    = "Allow"
-    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"]
+    actions   = [
+      "sqs:DeleteMessage", 
+      "sqs:GetQueueAttributes", 
+      "sqs:ReceiveMessage", 
+      "sqs:SendMessage"
+    ]
     resources = [
       var.job_queue_arn
     ]
@@ -375,7 +399,11 @@ data "aws_iam_policy_document" "lambda_s3_read_and_write" {
     ]
     resources = [
       "arn:aws:s3:::${var.project_name}-${var.environment}-athena-database",
-      "arn:aws:s3:::${var.project_name}-${var.environment}-athena-results"
+      "arn:aws:s3:::${var.project_name}-${var.environment}-athena-results",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-ticket-data",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-athena-database/*",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-athena-results/*",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-ticket-data/*"
     ]
   }
 }

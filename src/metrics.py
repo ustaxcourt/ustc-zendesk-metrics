@@ -50,19 +50,25 @@ def update_ticket_in_database(ticket):
 
 def update_metrics_database_at_cursor(window_start, cursor):
   data = zendesk.get_tickets_export(window_start, cursor)
+  env_vars = zendesk.get_env()
 
   for ticket in data['tickets']:
     if ticket['group_id'] is None:
       print('ticket is not a dawson ticket: None; ' + str(ticket['id']))
       continue
-    elif int(ticket['group_id']) != int(zendesk.config['zendesk_group_id']):
+    elif int(ticket['group_id']) != int(env_vars['zendesk_group_id']):
       print('ticket is not a dawson ticket: ' + str(ticket['group_id']) + '; ' + str(ticket['id']))
       continue
-    update_ticket_in_database(ticket)
+
+    insert_item_into_queue('update_ticket', ticket)
 
   if data['end_of_stream'] == False:
     print('continuing at ', data['after_cursor'])
-    params = { window_start: window_start, cursor: data['after_cursor'] }
+    params = { 
+      'window_start': window_start, 
+      'cursor': data['after_cursor'],
+      'source': 'sqs-message' 
+    }
     return insert_item_into_queue('update_database', params)
   
   print('next cursor (saving for next time): ', data['after_cursor'])
@@ -76,15 +82,25 @@ def update_metrics_database(event, context):
   cursor = get_metrics_cursor()
   window_start = datetime.strptime('01/01/2021', '%m/%d/%Y')
   window_start = int(time.mktime(window_start.timetuple()))
-  update_metrics_database_at_cursor(window_start, cursor)
+  params = { 
+    'window_start': window_start, 
+    'cursor': cursor, 
+    'source': 'cron' 
+  }
+  insert_item_into_queue('update_database', params)
+  # update_metrics_database_at_cursor(window_start, cursor)
 
 def process_sqs_message(event, context):
+  print('process_sqs_message lambda entry, record count: ', len(event['Records']))
   for record in event['Records']:
+    print('processing message')
     body = record['body']
     try:
       body = json.loads(body)
       job = body['job']
       params = body['params']
+      print('job', job, 'params', params)
+
       if job == 'solved': 
         get_solved_metrics(
           params['year'], 
@@ -100,15 +116,19 @@ def process_sqs_message(event, context):
           params['window_start'], 
           params['cursor']
         )
+      elif job == 'update_ticket':
+        update_ticket_in_database(params)
       else:
         raise Exception(f"Unknown job type: {job}")
 
     except Exception as e:
       print(f"Error processing message: {e}")
-      return {"statusCode": 400, "body": "Error processing message"}
+      # return {"statusCode": 400, "body": "Error processing message"}
+      raise Exception(e)
     return {"statusCode": 200}
 
 def insert_item_into_queue(job, params):
+  print('inserting item into queue, job', job, 'params', params)
   client = aws.get_sqs_client()
   queue_url = os.getenv('JOB_QUEUE_URL')
   client.send_message(
@@ -118,6 +138,7 @@ def insert_item_into_queue(job, params):
       'params': params,
     }),
   )
+  print('done inserting into queue')
 
 def build_cache_populate_queue():
   today = date.today()
