@@ -1,0 +1,99 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: "us-east-1"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      sha: ${{ steps.select.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.PROD_AWS_DEPLOYER_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Package lambda functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./terraform/scripts/build-lambda.sh
+
+      - name: Upload lambda functions
+        id: upload_artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          export GIT_SHA="${{ github.sha }}"
+          export BUCKET="zendesk-metrics-prod-build-artifacts"
+          ./terraform/scripts/upload_artifacts_to_s3.sh
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.5"
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: terraform/environments
+        run: |
+          terraform init -input=false \
+           -backend-config="bucket=zendesk-metrics-prod-terraform-state" \
+           -backend-config="key=zendesk-metrics/terraform.tfstate" \
+           -backend-config="region=us-east-1" \
+           -backend-config="dynamodb_table=zendesk-metrics-terraform-locks" \
+           -backend-config="encrypt=true"
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: terraform/environments
+        env:
+          TF_VAR_environment: "prod"
+          TF_VAR_artifact_bucket: "bucket=zendesk-metrics-prod-artifacts-bucket"
+          TF_VAR_getReport_s3_key: ${{ steps.upload_artifacts.outputs.getReport_s3_key }}
+          TF_VAR_getReport_source_code_hash: ${{ steps.upload_artifacts.outputs.getReport_source_code_hash }}
+          TF_VAR_updateMetricsDatabase_s3_key: ${{ steps.upload_artifacts.outputs.updateMetricsDatabase_s3_key }}
+          TF_VAR_updateMetricsDatabase_source_code_hash: ${{ steps.upload_artifacts.outputs.updateMetricsDatabase_source_code_hash }}
+          TF_VAR_processSqsMessage_s3_key: ${{ steps.upload_artifacts.outputs.processSqsMessage_s3_key }}
+          TF_VAR_processSqsMessage_source_code_hash: ${{ steps.upload_artifacts.outputs.processSqsMessage_source_code_hash }}
+        run: |
+          set +e
+          terraform plan -input=false -lock-timeout=2m -detailed-exitcode -out=tfplan
+          code=$?
+          echo "exitcode=$code" >> $GITHUB_OUTPUT
+          terraform show -no-color tfplan > tfplan.txt || true
+          set -e
+
+      - name: Debug plan exit code
+        run: echo "plan exitcode=${{ steps.plan.outputs.exitcode }}"
+
+      - name: Terraform Apply (if required)
+        if: ${{ steps.plan.outputs.exitcode == '2' }}
+        working-directory: terraform/environments
+        env:
+          TF_VAR_environment: "prod"
+          TF_VAR_artifact_bucket: "bucket=zendesk-metrics-prod-artifacts-bucket"
+          TF_VAR_getReport_s3_key: ${{ steps.upload_artifacts.outputs.getReport_s3_key }}
+          TF_VAR_getReport_source_code_hash: ${{ steps.upload_artifacts.outputs.getReport_source_code_hash }}
+          TF_VAR_updateMetricsDatabase_s3_key: ${{ steps.upload_artifacts.outputs.updateMetricsDatabase_s3_key }}
+          TF_VAR_updateMetricsDatabase_source_code_hash: ${{ steps.upload_artifacts.outputs.updateMetricsDatabase_source_code_hash }}
+          TF_VAR_processSqsMessage_s3_key: ${{ steps.upload_artifacts.outputs.processSqsMessage_s3_key }}
+          TF_VAR_processSqsMessage_source_code_hash: ${{ steps.upload_artifacts.outputs.processSqsMessage_source_code_hash }}
+        run: terraform apply -auto-approve tfplan

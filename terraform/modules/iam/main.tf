@@ -224,7 +224,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "iam:UntagPolicy"
         ],
         Resource = [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/build-artifacts-access-policy",
+          var.build_artifacts_access_policy_arn,
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/${local.project_name}-*"
         ]
       },
@@ -253,6 +253,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "sqs:ListQueues",
           "sqs:ListQueueTags",
           "sqs:TagQueue",
+          "sqs:setqueueattributes"
         ],
         Resource = [
           var.job_queue_arn,

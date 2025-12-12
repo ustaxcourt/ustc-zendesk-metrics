@@ -14,6 +14,5 @@ locals {
   lambda_exec_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${local.project_name}-lambda-exec" # TODO
 
   # Artifacts bucket policy ARN (constructed dynamically for PR workspaces)
-  artifacts_bucket_policy_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/build-artifacts-access-policy"
   artifacts_bucket_name       = "${local.project_name}-${var.environment}-build-artifacts"
 }
