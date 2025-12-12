@@ -225,6 +225,7 @@ def get_user(assignee_id):
   return data['user']['name']
 
 def get_tickets_export(window_start, cursor):
+  print('get_tickets_export init')
   env_vars = get_env()
   url = config['api_url'] + f'/api/v2/incremental/tickets/cursor.json'
   print('debug, cursor is ', cursor)
@@ -233,7 +234,9 @@ def get_tickets_export(window_start, cursor):
   else:
     url = f'{url}?cursor={cursor}'
 
+  print('get_tickets_export url is ', url)
   response = requests.get(url, auth=(env_vars['user'], env_vars['token']))
+  print('get_tickets_export status code is ', response.status_code)
 
   if response.status_code == 429:
     print('rate limit reached. retry after: ', response.headers['Retry-After'])
