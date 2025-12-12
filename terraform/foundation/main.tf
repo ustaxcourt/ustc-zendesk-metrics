@@ -49,7 +49,7 @@ module "artifacts_bucket" {
 # Attach artifact bucket policy to deployer role (GitHub Actions --> AWS deployment)
 resource "aws_iam_role_policy_attachment" "ci_build_artifacts" {
   role       = module.iam.cicd_role_name
-  policy_arn = local.artifacts_bucket_policy_arn
+  policy_arn = module.artifacts_bucket.build_artifacts_access_policy_arn
 }
 
 resource "aws_iam_openid_connect_provider" "cicd_identity_provider" {
