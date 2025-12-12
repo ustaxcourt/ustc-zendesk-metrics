@@ -59,6 +59,7 @@ def update_metrics_database_at_cursor(window_start, cursor):
     elif int(ticket['group_id']) != int(env_vars['zendesk_group_id']):
       print('ticket is not a dawson ticket: ' + str(ticket['group_id']) + '; ' + str(ticket['id']))
       continue
+
     insert_item_into_queue('update_ticket', ticket)
 
   if data['end_of_stream'] == False:
@@ -127,6 +128,7 @@ def process_sqs_message(event, context):
     return {"statusCode": 200}
 
 def insert_item_into_queue(job, params):
+  print('inserting item into queue, job', job, 'params', params)
   client = aws.get_sqs_client()
   queue_url = os.getenv('JOB_QUEUE_URL')
   client.send_message(
@@ -136,6 +138,7 @@ def insert_item_into_queue(job, params):
       'params': params,
     }),
   )
+  print('done inserting into queue')
 
 def build_cache_populate_queue():
   today = date.today()
