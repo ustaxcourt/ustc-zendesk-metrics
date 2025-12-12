@@ -59,7 +59,7 @@ def update_metrics_database_at_cursor(window_start, cursor):
     elif int(ticket['group_id']) != int(env_vars['zendesk_group_id']):
       print('ticket is not a dawson ticket: ' + str(ticket['group_id']) + '; ' + str(ticket['id']))
       continue
-    update_ticket_in_database(ticket)
+    insert_item_into_queue('update_ticket', ticket)
 
   if data['end_of_stream'] == False:
     print('continuing at ', data['after_cursor'])
@@ -77,7 +77,9 @@ def update_metrics_database(event, context):
   cursor = get_metrics_cursor()
   window_start = datetime.strptime('01/01/2021', '%m/%d/%Y')
   window_start = int(time.mktime(window_start.timetuple()))
-  update_metrics_database_at_cursor(window_start, cursor)
+  params = { 'window_start': window_start, 'cursor': cursor }
+  insert_item_into_queue('update_database', params)
+  # update_metrics_database_at_cursor(window_start, cursor)
 
 def process_sqs_message(event, context):
   for record in event['Records']:
@@ -101,6 +103,8 @@ def process_sqs_message(event, context):
           params['window_start'], 
           params['cursor']
         )
+      elif job == 'update_ticket':
+        update_ticket_in_database(params)
       else:
         raise Exception(f"Unknown job type: {job}")
 
