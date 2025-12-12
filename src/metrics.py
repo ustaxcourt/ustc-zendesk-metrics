@@ -82,12 +82,16 @@ def update_metrics_database(event, context):
   # update_metrics_database_at_cursor(window_start, cursor)
 
 def process_sqs_message(event, context):
+  print('process_sqs_message lambda entry')
   for record in event['Records']:
+    print('processing message')
     body = record['body']
     try:
       body = json.loads(body)
       job = body['job']
       params = body['params']
+      print('job', job, 'params', params)
+
       if job == 'solved': 
         get_solved_metrics(
           params['year'], 
