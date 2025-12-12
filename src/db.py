@@ -10,7 +10,7 @@ def query(QueryString):
   response = client.start_query_execution(
     QueryString=QueryString,
     QueryExecutionContext={
-        'Database': 'zendesk_tickets'
+        'Database': 'metrics_database'
     },
      ResultConfiguration={
         'OutputLocation': f's3://{athena_results_bucket}/',
