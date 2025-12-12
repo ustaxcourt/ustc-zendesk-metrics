@@ -10,7 +10,7 @@ locals {
 
 resource "aws_sqs_queue" "job_queue" {
   name                       = local.queue_name
-  visibility_timeout_seconds = 30
+  visibility_timeout_seconds = 600
   tags                       = local.tags
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.dead_letter_queue.arn
@@ -20,7 +20,6 @@ resource "aws_sqs_queue" "job_queue" {
 
 resource "aws_sqs_queue" "dead_letter_queue" {
   name                       = "${local.queue_name}-dlq"
-  visibility_timeout_seconds = 30
   message_retention_seconds  = 1209600
   tags                       = local.tags
 }
