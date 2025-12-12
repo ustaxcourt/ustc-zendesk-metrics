@@ -12,7 +12,7 @@ variable "lambda_execution_role_arn" {
 variable "runtime" {
   description = "Lambda runtime"
   type        = string
-  default     = "python3.9"
+  default     = "python3.14"
 }
 
 variable "environment_variables" {
