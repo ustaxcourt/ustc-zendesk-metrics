@@ -24,7 +24,7 @@ resource "aws_lambda_function" "functions" {
   handler       = each.value.handler
 
   runtime = var.runtime
-  timeout = 25
+  timeout = var.lambda_timeouts[each.key]
 
   # Increase /tmp storage to 5GB
   ephemeral_storage {

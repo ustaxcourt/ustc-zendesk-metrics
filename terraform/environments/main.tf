@@ -28,14 +28,20 @@ module "lambda" {
 
   artifact_bucket = local.artifacts_bucket_name
   artifact_s3_keys = {
-    getReport    = var.getReport_s3_key
+    getReport             = var.getReport_s3_key
     updateMetricsDatabase = var.updateMetricsDatabase_s3_key
-    processSqsMessage    = var.processSqsMessage_s3_key
+    processSqsMessage     = var.processSqsMessage_s3_key
   }
   source_code_hashes = {
-    getReport    = var.getReport_source_code_hash
+    getReport             = var.getReport_source_code_hash
     updateMetricsDatabase = var.updateMetricsDatabase_source_code_hash
-    processSqsMessage    = var.processSqsMessage_source_code_hash
+    processSqsMessage     = var.processSqsMessage_source_code_hash
+  }
+
+  lambda_timeouts = {
+    getReport             = 30
+    updateMetricsDatabase = 600
+    processSqsMessage     = 600
   }
 
   tags = {
