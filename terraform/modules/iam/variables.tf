@@ -71,6 +71,11 @@ variable "artifacts_bucket_name" {
   description = "Name of the artifacts bucket"
 }
 
+variable "build_artifacts_access_policy_arn" {
+  type        = string
+  description = "ARN of the artifacts bucket's access policy"
+}
+
 variable "job_queue_arn" {
   type        = string
   description = "ARN of the job queue"
