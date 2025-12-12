@@ -326,6 +326,24 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = [
           "arn:aws:athena:${local.aws_region}:${data.aws_caller_identity.current.account_id}:*",
         ]
+      }, 
+      {
+        Effect = "Allow",
+        Action = [
+          "lambda:CreateEventSourceMapping",
+          "lambda:DeleteEventSourceMapping",
+          "lambda:ListEventSourceMappings",
+          "lambda:UpdateEventSourceMapping",
+          "lambda:ListTags"
+        ],
+        Resource = [
+          "arn:aws:lambda:${local.aws_region}:${data.aws_caller_identity.current.account_id}:event-source-mapping:*",
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = "lambda:GetEventSourceMapping",
+        Resource = "*"
       }
     ]
   })
