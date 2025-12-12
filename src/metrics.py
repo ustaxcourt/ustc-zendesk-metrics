@@ -242,7 +242,7 @@ def get_types_solved_by_month(year, month):
   
   counts = {}
   keys, data = db.query(
-    f"SELECT COUNT(ticket_id) AS num_tickets, type FROM zendesk_tickets2 WHERE year(solved_at) = {year} AND month(solved_at) = {month} AND type != '' GROUP BY type"
+    f"SELECT COUNT(ticket_id) AS num_tickets, type FROM zendesk_tickets WHERE year(solved_at) = {year} AND month(solved_at) = {month} AND type != '' GROUP BY type"
   )
 
   for row in data:
@@ -264,7 +264,7 @@ def get_resolutions_solved_by_month(year, month):
     'resolutions_by_type': {}
   }
   keys, data = db.query((    
-    f"SELECT COUNT(ticket_id) AS num_tickets, type_resolution FROM (SELECT ticket_id, CONCAT(type, '::::', resolution) AS type_resolution FROM zendesk_tickets2 WHERE year(solved_at) = {year} AND month(solved_at) = {month} AND type != '' AND resolution != '') GROUP BY type_resolution"
+    f"SELECT COUNT(ticket_id) AS num_tickets, type_resolution FROM (SELECT ticket_id, CONCAT(type, '::::', resolution) AS type_resolution FROM zendesk_tickets WHERE year(solved_at) = {year} AND month(solved_at) = {month} AND type != '' AND resolution != '') GROUP BY type_resolution"
   ))
 
   for row in data:
@@ -396,7 +396,7 @@ def get_created_metrics_by_year(year):
     return counts
 
   keys, data = db.query((    
-    f"SELECT count(ticket_id) AS num_tickets, month_created from (SELECT ticket_id, month(created_at) as month_created FROM zendesk_tickets2 WHERE year(created_at) = {year}) GROUP BY month_created ORDER BY month_created"
+    f"SELECT count(ticket_id) AS num_tickets, month_created from (SELECT ticket_id, month(created_at) as month_created FROM zendesk_tickets WHERE year(created_at) = {year}) GROUP BY month_created ORDER BY month_created"
   ))
   counts = {}
   
@@ -421,7 +421,7 @@ def get_created_metrics_by_month(year, month):
   keys, data = db.query((
     'SELECT count(ticket_id) AS num_tickets, date_created from ('
     "SELECT ticket_id, day_of_month(created_at) AS date_created "
-    f'FROM zendesk_tickets2 WHERE year(created_at)={year} AND month(created_at)={month}) '
+    f'FROM zendesk_tickets WHERE year(created_at)={year} AND month(created_at)={month}) '
     'GROUP BY date_created ORDER BY date_created'
   ))
   counts = {}
@@ -442,7 +442,7 @@ def get_created_metrics_by_month(year, month):
   keys, data = db.query((
     'SELECT count(ticket_id) AS num_tickets, date_created from ('
     "SELECT ticket_id, day_of_month(created_at) AS date_created "
-    f'FROM zendesk_tickets2 WHERE year(created_at)={year} AND month(created_at)={month} AND is_public_helpdesk = true) '
+    f'FROM zendesk_tickets WHERE year(created_at)={year} AND month(created_at)={month} AND is_public_helpdesk = true) '
     'GROUP BY date_created ORDER BY date_created'
   ))
 
