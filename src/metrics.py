@@ -63,7 +63,11 @@ def update_metrics_database_at_cursor(window_start, cursor):
 
   if data['end_of_stream'] == False:
     print('continuing at ', data['after_cursor'])
-    params = { 'window_start': window_start, 'cursor': data['after_cursor'] }
+    params = { 
+      'window_start': window_start, 
+      'cursor': data['after_cursor'],
+      'source': 'sqs-message' 
+    }
     return insert_item_into_queue('update_database', params)
   
   print('next cursor (saving for next time): ', data['after_cursor'])
@@ -77,7 +81,11 @@ def update_metrics_database(event, context):
   cursor = get_metrics_cursor()
   window_start = datetime.strptime('01/01/2021', '%m/%d/%Y')
   window_start = int(time.mktime(window_start.timetuple()))
-  params = { 'window_start': window_start, 'cursor': cursor }
+  params = { 
+    'window_start': window_start, 
+    'cursor': cursor, 
+    'source': 'cron' 
+  }
   insert_item_into_queue('update_database', params)
   # update_metrics_database_at_cursor(window_start, cursor)
 
