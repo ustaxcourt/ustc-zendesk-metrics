@@ -375,7 +375,11 @@ data "aws_iam_policy_document" "lambda_s3_read_and_write" {
     ]
     resources = [
       "arn:aws:s3:::${var.project_name}-${var.environment}-athena-database",
-      "arn:aws:s3:::${var.project_name}-${var.environment}-athena-results"
+      "arn:aws:s3:::${var.project_name}-${var.environment}-athena-results",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-ticket-data",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-athena-database/*",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-athena-results/*",
+      "arn:aws:s3:::${var.project_name}-${var.environment}-ticket-data/*"
     ]
   }
 }
