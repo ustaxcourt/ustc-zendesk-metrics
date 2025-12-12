@@ -16,7 +16,7 @@ module "lambda" {
   source                    = "../modules/lambda"
   function_name_prefix      = local.project_name
   lambda_execution_role_arn = data.terraform_remote_state.foundation.outputs.lambda_role_arn
-  runtime                   = "python3.15"
+  runtime                   = "python3.13"
   
   environment_variables     = {
     ENV                   = var.environment
