@@ -82,6 +82,7 @@ resource "terraform_data" "update_metrics_database_cron_lambda_last_modified" {
 
 module "sqs" {
   source = "../modules/sqs"
+  lambda_arn = module.lambda.process_sqs_message_function_arn
 }
 
 module "s3" {

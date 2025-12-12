@@ -24,3 +24,11 @@ resource "aws_sqs_queue" "dead_letter_queue" {
   message_retention_seconds  = 1209600
   tags                       = local.tags
 }
+
+resource "aws_lambda_event_source_mapping" "sqs_trigger" {
+  event_source_arn = aws_sqs_queue.job_queue.arn
+  function_name    = var.lambda_arn
+  enabled          = true
+  batch_size = 1
+
+}
