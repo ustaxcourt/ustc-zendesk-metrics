@@ -1,5 +1,6 @@
 from . import aws
 import time
+import os
 
 athena_results_bucket = os.getenv('ATHENA_RESULTS_BUCKET')
 
@@ -12,7 +13,7 @@ def query(QueryString):
         'Database': 'zendesk_tickets'
     },
      ResultConfiguration={
-        'OutputLocation': f's3://${results_location}/',
+        'OutputLocation': f's3://{athena_results_bucket}/',
         },
     WorkGroup='primary'
   )
