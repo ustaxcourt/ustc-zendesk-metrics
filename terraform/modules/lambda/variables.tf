@@ -47,3 +47,8 @@ variable "source_code_hashes" {
   description = "Map of function names to base64-encoded SHA256 hashes"
   type        = map(string)
 }
+
+variable "lambda_timeouts" {
+  description = "Map of function names to timeouts in seconds"
+  type        = map(number)
+}
