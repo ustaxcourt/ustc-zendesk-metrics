@@ -90,7 +90,7 @@ def update_metrics_database(event, context):
   # update_metrics_database_at_cursor(window_start, cursor)
 
 def process_sqs_message(event, context):
-  print('process_sqs_message lambda entry')
+  print('process_sqs_message lambda entry, record count: ', len(event['Records']))
   for record in event['Records']:
     print('processing message')
     body = record['body']
@@ -122,7 +122,8 @@ def process_sqs_message(event, context):
 
     except Exception as e:
       print(f"Error processing message: {e}")
-      return {"statusCode": 400, "body": "Error processing message"}
+      # return {"statusCode": 400, "body": "Error processing message"}
+      raise Exception(e)
     return {"statusCode": 200}
 
 def insert_item_into_queue(job, params):
