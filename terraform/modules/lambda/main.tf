@@ -49,3 +49,9 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
     create_before_destroy = true
   }
 }
+
+# Allow the function to invoke itself recursively
+resource "aws_lambda_function_recursion_config" "example" {
+  function_name  = "${var.function_name_prefix}-processSqsMessage"
+  recursive_loop = "Allow"
+}
