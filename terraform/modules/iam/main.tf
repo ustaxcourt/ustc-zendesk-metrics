@@ -89,18 +89,19 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
       {
         Effect = "Allow",
         Action = [
+          "lambda:AddPermission",
           "lambda:CreateFunction",
-          "lambda:UpdateFunctionCode",
-          "lambda:UpdateFunctionConfiguration",
-          "lambda:PublishVersion",
           "lambda:DeleteFunction",
           "lambda:GetFunction*",
           "lambda:GetPolicy",
           "lambda:ListVersionsByFunction",
-          "lambda:AddPermission",
+          "lambda:PublishVersion",
+          "lambda:PutFunctionRecursionConfig",
           "lambda:RemovePermission",
           "lambda:TagResource",
-          "lambda:UntagResource"
+          "lambda:UntagResource",
+          "lambda:UpdateFunctionCode",
+          "lambda:UpdateFunctionConfiguration"
         ],
         Resource = "arn:aws:lambda:${local.aws_region}:${data.aws_caller_identity.current.account_id}:function:${local.project_name}*"
       },
@@ -335,7 +336,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "lambda:DeleteEventSourceMapping",
           "lambda:ListEventSourceMappings",
           "lambda:UpdateEventSourceMapping",
-          "lambda:ListTags"
+          "lambda:ListTags",
         ],
         Resource = [
           "arn:aws:lambda:${local.aws_region}:${data.aws_caller_identity.current.account_id}:event-source-mapping:*",
