@@ -62,6 +62,9 @@ def update_metrics_database_at_cursor(window_start, cursor):
 
     insert_item_into_queue('update_ticket', ticket)
 
+  print('next cursor (saving for next time): ', data['after_cursor'])
+  update_metrics_cursor(data['after_cursor'])
+
   if data['end_of_stream'] == False:
     print('continuing at ', data['after_cursor'])
     params = { 
@@ -71,8 +74,6 @@ def update_metrics_database_at_cursor(window_start, cursor):
     }
     return insert_item_into_queue('update_database', params)
   
-  print('next cursor (saving for next time): ', data['after_cursor'])
-  update_metrics_cursor(data['after_cursor'])
   print('DONE')
   clear_cache()
   build_cache_populate_queue()
