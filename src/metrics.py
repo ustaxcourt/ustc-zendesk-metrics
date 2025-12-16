@@ -443,14 +443,23 @@ def get_created_metrics_by_month(year, month):
   keys, data = db.query((
     'SELECT count(ticket_id) AS num_tickets, date_created from ('
     "SELECT ticket_id, day_of_month(created_at) AS date_created "
-    f'FROM zendesk_tickets WHERE year(created_at)={year} AND month(created_at)={month} AND is_public_helpdesk = true) '
+    f'FROM zendesk_tickets WHERE year(created_at)={year} AND month(created_at)={month} AND is_public_helpdesk = false) '
     'GROUP BY date_created ORDER BY date_created'
   ))
 
+  days_found = []
   for row in data:
+    days_found.append(key)
     key = row['date_created']
-    counts[key]['helpdesk'] = int(row['num_tickets'])
-    counts[key]['dawson'] = counts[key]['total'] - int(row['num_tickets'])
+    num_dawson_tickets = int(row['num_tickets'])
+    counts[key]['dawson'] = num_dawson_tickets
+    counts[key]['helpdesk'] = counts[key]['total'] - num_dawson_tickets
+
+  for day in range(1, last_day_of_month+1):
+    day_of_month = str(day)
+    if day_of_month not in days_found:
+      counts[day_of_month]['helpdesk'] = 0
+      counts[day_of_month]['dawson'] = counts[day_of_month]['total']
 
   save_cache(cache_key, year, month, counts)
   return counts
