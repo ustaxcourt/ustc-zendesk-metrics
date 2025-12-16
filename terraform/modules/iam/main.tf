@@ -367,6 +367,26 @@ resource "aws_iam_role_policy" "lambda_secrets_read" {
   policy = data.aws_iam_policy_document.lambda_secrets_read.json
 }
 
+data "aws_iam_policy_document" "lambda_athena_access" {
+  statement {
+    sid       = "AthenaAccess"
+    effect    = "Allow"
+    actions   = [
+      "athena:Get*", 
+      "athena:StartQueryExecution"
+    ]
+    resources = ["arn:aws:athena:${local.aws_region}:${data.aws_caller_identity.current.account_id}:*"]
+  }
+}
+
+
+
+resource "aws_iam_role_policy" "lambda_athena_access_policy" {
+  name   = "${local.project_name}-lambda-athena-access"
+  role = aws_iam_role.lambda_exec.name
+  policy = data.aws_iam_policy_document.lambda_athena_access.json
+}
+
 data "aws_iam_policy_document" "lambda_sqs_read_and_write" {
   statement {
     sid       = "SQSReadWrite"
@@ -396,7 +416,8 @@ data "aws_iam_policy_document" "lambda_s3_read_and_write" {
       "s3:GetObject",
       "s3:PutObject",
       "s3:DeleteObject",
-      "s3:ListBucket"
+      "s3:ListBucket",
+      "s3:GetBucketLocation"
     ]
     resources = [
       "arn:aws:s3:::${var.project_name}-${var.environment}-athena-database",
@@ -412,4 +433,27 @@ resource "aws_iam_role_policy" "lambda_s3_read_and_write" {
   name   = "${local.project_name}-lambda-s3-read-and-write"
   role   = aws_iam_role.lambda_exec.name
   policy = data.aws_iam_policy_document.lambda_s3_read_and_write.json
+}
+
+data "aws_iam_policy_document" "lambda_glue" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "glue:GetTable",
+      "glue:GetTableVersion",
+      "glue:GetTableVersions",
+      "glue:GetDatabase"
+    ]
+    resources = [
+      "arn:aws:glue:${local.aws_region}:${data.aws_caller_identity.current.account_id}:catalog",
+      "arn:aws:glue:${local.aws_region}:${data.aws_caller_identity.current.account_id}:database/metrics_database",
+      "arn:aws:glue:${local.aws_region}:${data.aws_caller_identity.current.account_id}:table/metrics_database/*"
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "lambda_glue" {
+  name   = "${local.project_name}-lambda-glue"
+  role   = aws_iam_role.lambda_exec.name
+  policy = data.aws_iam_policy_document.lambda_glue.json
 }
