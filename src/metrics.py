@@ -215,10 +215,10 @@ def get_report(event, context):
       "body": f"Incorrect format of year: {year}"
     }
   year = event['queryStringParameters']['year']
-  if len(year) != 4 or year.isdigit():
+  if len(year) != 4 or year.isdigit() == False:
     return {
       "statusCode": 400,
-      "body": f"Incorrect format of year:  {year}"
+      "body": f"Incorrect format of year: {year}"
     }
   
   month = None
