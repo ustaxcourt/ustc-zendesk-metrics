@@ -207,16 +207,18 @@ def get_all_unsolved():
   return
 
 def get_report(event, context):
+  print('debug', json.dumps(event['queryStringParameters']))
+
   if 'year' not in event['queryStringParameters']:
     return {
       "statusCode": 400,
-      "body": "Incorrect format of year"
+      "body": f"Incorrect format of year: {year}"
     }
   year = event['queryStringParameters']['year']
-  if len(year) == 4 and year.isdigit():
+  if len(year) != 4 or year.isdigit():
     return {
       "statusCode": 400,
-      "body": "Incorrect format of year"
+      "body": f"Incorrect format of year:  {year}"
     }
   
   month = None
