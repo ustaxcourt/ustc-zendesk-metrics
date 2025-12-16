@@ -80,7 +80,7 @@ def update_metrics_database_at_cursor(window_start, cursor):
 
 def update_metrics_database(event, context):
   print('update_metrics_database from lambda')
-  cursor = get_metrics_cursor()
+  cursor = get_metrics_cursor(use_cache=False)
   window_start = datetime.strptime('01/01/2021', '%m/%d/%Y')
   window_start = int(time.mktime(window_start.timetuple()))
   params = { 
@@ -173,9 +173,9 @@ def update_metrics_cursor(new_cursor):
   )
   cached_cursor = new_cursor
 
-def get_metrics_cursor():
+def get_metrics_cursor(use_cache=True):
   global cached_cursor
-  if cached_cursor is not None:
+  if cached_cursor is not None and use_cache:
     return cached_cursor
 
   try: 
@@ -207,24 +207,15 @@ def get_all_unsolved():
   return
 
 def get_report(event, context):
-  date = event['pathParameters']['date']
-  if '-' in date:
-    year, month = date.split('-')
-  else:
-    month = None
-    year = date 
+  year = event['queryStringParameters']['year']
+  month = event['queryStringParameters']['month']
 
-  p = {
-    'year': re.compile('^\\d{4}$'),
-  }
-  m = {
-    'year': p['year'].match(year),
-  }
-  if m['year'] is None:
+  if len(year) == 4 and year.isdigit():
     return {
       "statusCode": 400,
       "body": "Incorrect format of year"
     }
+    
   data = {
     'created': get_created_metrics(year, month),
     'solved': get_solved_metrics(year, month),
