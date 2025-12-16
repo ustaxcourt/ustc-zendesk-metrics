@@ -207,24 +207,15 @@ def get_all_unsolved():
   return
 
 def get_report(event, context):
-  date = event['pathParameters']['date']
-  if '-' in date:
-    year, month = date.split('-')
-  else:
-    month = None
-    year = date 
+  year = event['queryStringParameters']['year']
+  month = event['queryStringParameters']['month']
 
-  p = {
-    'year': re.compile('^\\d{4}$'),
-  }
-  m = {
-    'year': p['year'].match(year),
-  }
-  if m['year'] is None:
+  if len(year) == 4 and year.isdigit():
     return {
       "statusCode": 400,
       "body": "Incorrect format of year"
     }
+    
   data = {
     'created': get_created_metrics(year, month),
     'solved': get_solved_metrics(year, month),
