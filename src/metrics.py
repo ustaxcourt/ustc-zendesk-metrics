@@ -12,6 +12,14 @@ from calendar import monthrange
 field_value_cache = {}
 cached_cursor = None
 
+# the keys below are no longer used, and they have been replaced with the corresponding values below
+retired_field_values_map = {
+  'resolution': {
+    'deferred': 'spam/other/not_applicable__no_action_needed',
+    'spam/other/not_applicable__suspicious': 'spam/other/not_applicable__no_action_needed',
+  }
+}
+
 def get_field_value(field_name, key):
   if key == 'None' or key == '':
     return 'None'
@@ -19,6 +27,9 @@ def get_field_value(field_name, key):
   if field_name not in field_value_cache:
     field_value_cache[field_name] = zendesk.get_ticket_field(field_name)
   
+  if field_name in retired_field_values_map and key in retired_field_values_map[field_name]:
+    key = retired_field_values_map[field_name][key]
+
   return field_value_cache[field_name][key]
 
 def update_ticket_in_database(ticket):
