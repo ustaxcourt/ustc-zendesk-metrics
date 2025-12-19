@@ -27,7 +27,7 @@ def get_field_value(field_name, key):
   if field_name not in field_value_cache:
     field_value_cache[field_name] = zendesk.get_ticket_field(field_name)
   
-  if key in retired_field_values_map[field_name]:
+  if field_name in retired_field_values_map and key in retired_field_values_map[field_name]:
     key = retired_field_values_map[field_name]
 
   return field_value_cache[field_name][key]
